@@ -1,4 +1,4 @@
-package tests
+package flam
 
 import (
 	"errors"
@@ -9,21 +9,18 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/happyhippyhippo/flam"
 )
 
 func Test_PubSub_Subscribe(t *testing.T) {
 	var called bool
-	handler := func(id, channel string, _ ...any) error {
-		assert.Equal(t, "id", id)
+	handler := func(channel string, _ ...any) error {
 		assert.Equal(t, "channel", channel)
 
 		called = true
 		return nil
 	}
 
-	ps := flam.NewPubSub[string, string]()
+	ps := NewPubSub[string, string]()
 	require.NotNil(t, ps)
 
 	assert.Same(t, ps, ps.Subscribe("id", "channel", handler))
@@ -35,15 +32,14 @@ func Test_PubSub_Subscribe(t *testing.T) {
 func Test_PubSub_Unsubscribe(t *testing.T) {
 	t.Run("should unsubscribe channel", func(t *testing.T) {
 		var called bool
-		handler := func(id, channel string, _ ...any) error {
-			assert.Equal(t, "id", id)
+		handler := func(channel string, _ ...any) error {
 			assert.Equal(t, "channel", channel)
 
 			called = true
 			return nil
 		}
 
-		ps := flam.NewPubSub[string, string]()
+		ps := NewPubSub[string, string]()
 		require.NotNil(t, ps)
 
 		assert.Same(t, ps, ps.Subscribe("id", "channel", handler))
@@ -54,18 +50,18 @@ func Test_PubSub_Unsubscribe(t *testing.T) {
 	})
 
 	t.Run("should unsubscribe from non-existent channel", func(t *testing.T) {
-		ps := flam.NewPubSub[string, string]()
+		ps := NewPubSub[string, string]()
 		require.NotNil(t, ps)
 
 		assert.Same(t, ps, ps.Unsubscribe("id", "channel"))
 	})
 
 	t.Run("should unsubscribe non-existent id", func(t *testing.T) {
-		handler := func(_, _ string, _ ...any) error {
+		handler := func(_ string, _ ...any) error {
 			return nil
 		}
 
-		ps := flam.NewPubSub[string, string]()
+		ps := NewPubSub[string, string]()
 		require.NotNil(t, ps)
 
 		assert.Same(t, ps, ps.Subscribe("id1", "channel", handler))
@@ -75,22 +71,21 @@ func Test_PubSub_Unsubscribe(t *testing.T) {
 
 func Test_PubSub_Publish(t *testing.T) {
 	t.Run("should publish to channel with no subscribers without error", func(t *testing.T) {
-		ps := flam.NewPubSub[string, string]()
+		ps := NewPubSub[string, string]()
 		require.NotNil(t, ps)
 
 		assert.NoError(t, ps.Publish("channel", "data"))
 	})
 
 	t.Run("should publish with data without error", func(t *testing.T) {
-		handler := func(id, channel string, data ...any) error {
-			assert.Equal(t, "id", id)
+		handler := func(channel string, data ...any) error {
 			assert.Equal(t, "channel", channel)
 			assert.Equal(t, []any{"hello", 123}, data)
 
 			return nil
 		}
 
-		ps := flam.NewPubSub[string, string]()
+		ps := NewPubSub[string, string]()
 		require.NotNil(t, ps)
 
 		assert.Same(t, ps, ps.Subscribe("id", "channel", handler))
@@ -98,29 +93,29 @@ func Test_PubSub_Publish(t *testing.T) {
 	})
 
 	t.Run("should return error if handler returns error", func(t *testing.T) {
-		handler1 := func(id, channel string, data ...any) error {
-			assert.Equal(t, "id1", id)
+		handler1 := func(channel string, data ...any) error {
 			assert.Equal(t, "channel", channel)
+			assert.Equal(t, "data", data[0])
 
 			return nil
 		}
 
 		expectedErr := errors.New("handler error")
-		handler2 := func(id, channel string, data ...any) error {
-			assert.Equal(t, "id2", id)
+		handler2 := func(channel string, data ...any) error {
 			assert.Equal(t, "channel", channel)
+			assert.Equal(t, "data", data[0])
 
 			return expectedErr
 		}
 
-		handler3 := func(id, channel string, data ...any) error {
-			assert.Equal(t, "id3", id)
+		handler3 := func(channel string, data ...any) error {
 			assert.Equal(t, "channel", channel)
+			assert.Equal(t, "data", data[0])
 
 			return nil
 		}
 
-		ps := flam.NewPubSub[string, string]()
+		ps := NewPubSub[string, string]()
 		require.NotNil(t, ps)
 
 		assert.Same(t, ps, ps.Subscribe("id1", "channel", handler1))
@@ -137,7 +132,7 @@ func Test_PubSub_Concurrency(t *testing.T) {
 	publishCount := 10
 
 	var receivedCount int32
-	handler := func(id, channel string, _ ...any) error {
+	handler := func(channel string, _ ...any) error {
 		assert.Equal(t, "channel", channel)
 
 		atomic.AddInt32(&receivedCount, 1)
@@ -145,7 +140,7 @@ func Test_PubSub_Concurrency(t *testing.T) {
 		return nil
 	}
 
-	ps := flam.NewPubSub[string, string]()
+	ps := NewPubSub[string, string]()
 	require.NotNil(t, ps)
 
 	// Concurrent Subscribe
