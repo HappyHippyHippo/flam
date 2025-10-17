@@ -59,8 +59,8 @@ func (pubsub *pubsub[I, C]) Publish(
 	defer pubsub.locker.Unlock()
 
 	if subs, ok := pubsub.handlers[channel]; ok {
-		for id, handler := range subs {
-			if e := handler(id, channel, data...); e != nil {
+		for _, handler := range subs {
+			if e := handler(channel, data...); e != nil {
 				return e
 			}
 		}

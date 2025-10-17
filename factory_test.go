@@ -1,4 +1,4 @@
-package tests
+package flam
 
 import (
 	"errors"
@@ -7,26 +7,23 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/happyhippyhippo/flam"
-	"github.com/happyhippyhippo/flam/tests/mocks"
 )
 
 type testResource struct{}
 
 func Test_Factory_NewFactory(t *testing.T) {
 	t.Run("should return ErrNilReference when config is nil", func(t *testing.T) {
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", nil, nil)
+		factory, e := NewFactory[Resource](nil, "path", nil, nil)
 		assert.Nil(t, factory)
-		assert.ErrorIs(t, e, flam.ErrNilReference)
+		assert.ErrorIs(t, e, ErrNilReference)
 	})
 
 	t.Run("should return valid factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		assert.NotNil(t, factory)
 		assert.NoError(t, e)
 	})
@@ -37,14 +34,14 @@ func Test_Factory_Close(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		closer := mocks.NewCloser(ctrl)
+		closer := NewCloserMock(ctrl)
 		closer.EXPECT().Close().Return(nil).Times(1)
 
-		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -57,14 +54,14 @@ func Test_Factory_Close(t *testing.T) {
 		defer ctrl.Finish()
 
 		expectedErr := errors.New("close error")
-		closer := mocks.NewCloser(ctrl)
+		closer := NewCloserMock(ctrl)
 		closer.EXPECT().Close().Return(expectedErr).Times(1)
 
-		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -76,11 +73,11 @@ func Test_Factory_Close(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -94,11 +91,11 @@ func Test_Factory_List(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{"zulu": flam.Bag{}, "alpha": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{"zulu": Bag{}, "alpha": Bag{}}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(2)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -110,10 +107,10 @@ func Test_Factory_List(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get("path").Return(flam.Bag{}).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get("path").Return(Bag{}).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -125,11 +122,11 @@ func Test_Factory_Has(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	config := flam.Bag{"entry1": flam.Bag{}}
-	factoryConfig := mocks.NewFactoryConfig(ctrl)
+	config := Bag{"entry1": Bag{}}
+	factoryConfig := NewFactoryConfigMock(ctrl)
 	factoryConfig.EXPECT().Get("path").Return(config).AnyTimes()
 
-	factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+	factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 	require.NotNil(t, factory)
 	require.NoError(t, e)
 
@@ -157,16 +154,16 @@ func Test_Factory_Get(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get("path").Return(flam.Bag{}).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get("path").Return(Bag{}).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
 		got, e := factory.Get("nonexistent")
 		assert.Nil(t, got)
-		assert.ErrorIs(t, e, flam.ErrUnknownResource)
+		assert.ErrorIs(t, e, ErrUnknownResource)
 	})
 }
 
@@ -175,32 +172,32 @@ func Test_Factory_Generate(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get("path").Return(flam.Bag{}).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get("path").Return(Bag{}).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
 		got, e := factory.Generate("unknown")
 		assert.Nil(t, got)
-		assert.ErrorIs(t, e, flam.ErrUnknownResource)
+		assert.ErrorIs(t, e, ErrUnknownResource)
 	})
 
 	t.Run("should return an error if creator's Create method fails", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{"default": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{"default": Bag{}}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
 		expectedErr := errors.New("creation failed")
-		creator := mocks.NewResourceCreator[flam.Resource](ctrl)
-		creator.EXPECT().Accept(flam.Bag{"id": "default"}).Return(true)
-		creator.EXPECT().Create(flam.Bag{"id": "default"}).Return(nil, expectedErr)
+		creator := NewResourceCreatorMock[Resource](ctrl)
+		creator.EXPECT().Accept(Bag{"id": "default"}).Return(true)
+		creator.EXPECT().Create(Bag{"id": "default"}).Return(nil, expectedErr)
 
-		factory, e := flam.NewFactory([]flam.ResourceCreator[flam.Resource]{creator}, "path", factoryConfig, nil)
+		factory, e := NewFactory([]ResourceCreator[Resource]{creator}, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -213,34 +210,34 @@ func Test_Factory_Generate(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{"default": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{"default": Bag{}}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
-		creator := mocks.NewResourceCreator[flam.Resource](ctrl)
-		creator.EXPECT().Accept(flam.Bag{"id": "default"}).Return(false)
+		creator := NewResourceCreatorMock[Resource](ctrl)
+		creator.EXPECT().Accept(Bag{"id": "default"}).Return(false)
 
-		factory, e := flam.NewFactory([]flam.ResourceCreator[flam.Resource]{creator}, "path", factoryConfig, nil)
+		factory, e := NewFactory([]ResourceCreator[Resource]{creator}, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
 		got, e := factory.Generate("default")
 		assert.Nil(t, got)
-		assert.ErrorIs(t, e, flam.ErrInvalidResourceConfig)
+		assert.ErrorIs(t, e, ErrInvalidResourceConfig)
 	})
 
 	t.Run("should return the validation error if there is a validator and it return an error", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{"default": flam.Bag{"driver": "test"}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{"default": Bag{"driver": "test"}}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
 		expectedErr := errors.New("validation error")
-		validator := func(config flam.Bag) error { return expectedErr }
+		validator := func(config Bag) error { return expectedErr }
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, validator)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, validator)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -253,19 +250,19 @@ func Test_Factory_Generate(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{"default": flam.Bag{"driver": "test"}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{"default": Bag{"driver": "test"}}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
 		resource := &testResource{}
 
-		creator := mocks.NewResourceCreator[flam.Resource](ctrl)
-		creator.EXPECT().Accept(flam.Bag{"id": "default", "driver": "test"}).Return(true).Times(1)
-		creator.EXPECT().Create(flam.Bag{"id": "default", "driver": "test"}).Return(resource, nil).Times(1)
+		creator := NewResourceCreatorMock[Resource](ctrl)
+		creator.EXPECT().Accept(Bag{"id": "default", "driver": "test"}).Return(true).Times(1)
+		creator.EXPECT().Create(Bag{"id": "default", "driver": "test"}).Return(resource, nil).Times(1)
 
-		validator := func(config flam.Bag) error { return nil }
+		validator := func(config Bag) error { return nil }
 
-		factory, e := flam.NewFactory([]flam.ResourceCreator[flam.Resource]{creator}, "path", factoryConfig, validator)
+		factory, e := NewFactory([]ResourceCreator[Resource]{creator}, "path", factoryConfig, validator)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -284,24 +281,24 @@ func Test_Factory_Add(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		factoryConfig := NewFactoryConfigMock(ctrl)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
-		assert.ErrorIs(t, factory.Add("nil_resource", nil), flam.ErrNilReference)
+		assert.ErrorIs(t, factory.Add("nil_resource", nil), ErrNilReference)
 	})
 
 	t.Run("should successfully add a resource and allow it to be retrieved", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
@@ -317,16 +314,16 @@ func Test_Factory_Add(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		config := Bag{}
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		factoryConfig.EXPECT().Get("path").Return(config).Times(1)
 
-		factory, e := flam.NewFactory[flam.Resource](nil, "path", factoryConfig, nil)
+		factory, e := NewFactory[Resource](nil, "path", factoryConfig, nil)
 		require.NotNil(t, factory)
 		require.NoError(t, e)
 
 		resource := &testResource{}
 		assert.NoError(t, factory.Add("my_resource", resource))
-		assert.ErrorIs(t, factory.Add("my_resource", resource), flam.ErrDuplicateResource)
+		assert.ErrorIs(t, factory.Add("my_resource", resource), ErrDuplicateResource)
 	})
 }
