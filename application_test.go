@@ -35,13 +35,13 @@ func Test_Application_Register(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		provider := NewProviderMock(ctrl)
-		provider.EXPECT().Id().Return("provider").AnyTimes()
-		provider.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock := NewProviderMock(ctrl)
+		providerMock.EXPECT().Id().Return("provider").AnyTimes()
+		providerMock.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider))
-		assert.ErrorIs(t, app.Register(provider), ErrDuplicateProvider)
+		assert.NoError(t, app.Register(providerMock))
+		assert.ErrorIs(t, app.Register(providerMock), ErrDuplicateProvider)
 	})
 
 	t.Run("should return an error if provider registration fails", func(t *testing.T) {
@@ -49,22 +49,22 @@ func Test_Application_Register(t *testing.T) {
 		defer ctrl.Finish()
 
 		expectedErr := errors.New("registration error")
-		provider := NewProviderMock(ctrl)
-		provider.EXPECT().Register(gomock.Any()).Return(expectedErr).Times(1)
+		providerMock := NewProviderMock(ctrl)
+		providerMock.EXPECT().Register(gomock.Any()).Return(expectedErr).Times(1)
 
 		app := NewApplication()
-		assert.ErrorIs(t, app.Register(provider), expectedErr)
+		assert.ErrorIs(t, app.Register(providerMock), expectedErr)
 	})
 
 	t.Run("should register a provider successfully", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		provider := NewProviderMock(ctrl)
-		provider.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock := NewProviderMock(ctrl)
+		providerMock.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider))
+		assert.NoError(t, app.Register(providerMock))
 	})
 }
 
@@ -80,12 +80,12 @@ func Test_Application_Boot(t *testing.T) {
 		defer ctrl.Finish()
 
 		expectedErr := errors.New("boot error")
-		provider := NewBootableProviderMock(ctrl)
-		provider.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider.EXPECT().Boot(gomock.Any()).Return(expectedErr).Times(1)
+		providerMock := NewBootableProviderMock(ctrl)
+		providerMock.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock.EXPECT().Boot(gomock.Any()).Return(expectedErr).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider))
+		assert.NoError(t, app.Register(providerMock))
 		assert.ErrorIs(t, app.Boot(), expectedErr)
 	})
 
@@ -93,18 +93,18 @@ func Test_Application_Boot(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		provider1 := NewProviderMock(ctrl)
-		provider1.EXPECT().Id().Return("provider1").AnyTimes()
-		provider1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock1 := NewProviderMock(ctrl)
+		providerMock1.EXPECT().Id().Return("provider1").AnyTimes()
+		providerMock1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
 
-		provider2 := NewBootableProviderMock(ctrl)
-		provider2.EXPECT().Id().Return("provider2").AnyTimes()
-		provider2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider2.EXPECT().Boot(gomock.Any()).Return(nil).Times(1)
+		providerMock2 := NewBootableProviderMock(ctrl)
+		providerMock2.EXPECT().Id().Return("provider2").AnyTimes()
+		providerMock2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock2.EXPECT().Boot(gomock.Any()).Return(nil).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider1))
-		assert.NoError(t, app.Register(provider2))
+		assert.NoError(t, app.Register(providerMock1))
+		assert.NoError(t, app.Register(providerMock2))
 		assert.NoError(t, app.Boot())
 	})
 }
@@ -114,12 +114,12 @@ func Test_Application_Run(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		provider := NewBootableProviderMock(ctrl)
-		provider.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider.EXPECT().Boot(gomock.Any()).Return(nil).Times(1)
+		providerMock := NewBootableProviderMock(ctrl)
+		providerMock.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock.EXPECT().Boot(gomock.Any()).Return(nil).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider))
+		assert.NoError(t, app.Register(providerMock))
 		assert.NoError(t, app.Run())
 	})
 
@@ -128,12 +128,12 @@ func Test_Application_Run(t *testing.T) {
 		defer ctrl.Finish()
 
 		expectedErr := errors.New("boot error")
-		provider := NewBootableProviderMock(ctrl)
-		provider.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider.EXPECT().Boot(gomock.Any()).Return(expectedErr).Times(1)
+		providerMock := NewBootableProviderMock(ctrl)
+		providerMock.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock.EXPECT().Boot(gomock.Any()).Return(expectedErr).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider))
+		assert.NoError(t, app.Register(providerMock))
 		assert.ErrorIs(t, app.Run(), expectedErr)
 	})
 
@@ -142,12 +142,12 @@ func Test_Application_Run(t *testing.T) {
 		defer ctrl.Finish()
 
 		expectedErr := errors.New("run error")
-		provider := NewRunnableProviderMock(ctrl)
-		provider.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider.EXPECT().Run(gomock.Any()).Return(expectedErr).Times(1)
+		providerMock := NewRunnableProviderMock(ctrl)
+		providerMock.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock.EXPECT().Run(gomock.Any()).Return(expectedErr).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider))
+		assert.NoError(t, app.Register(providerMock))
 		assert.ErrorIs(t, app.Run(), expectedErr)
 	})
 
@@ -155,18 +155,18 @@ func Test_Application_Run(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		provider1 := NewProviderMock(ctrl)
-		provider1.EXPECT().Id().Return("provider1").Times(1)
-		provider1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock1 := NewProviderMock(ctrl)
+		providerMock1.EXPECT().Id().Return("provider1").Times(1)
+		providerMock1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
 
-		provider2 := NewRunnableProviderMock(ctrl)
-		provider2.EXPECT().Id().Return("provider2").Times(1)
-		provider2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider2.EXPECT().Run(gomock.Any()).Return(nil).Times(1)
+		providerMock2 := NewRunnableProviderMock(ctrl)
+		providerMock2.EXPECT().Id().Return("provider2").Times(1)
+		providerMock2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock2.EXPECT().Run(gomock.Any()).Return(nil).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider1))
-		assert.NoError(t, app.Register(provider2))
+		assert.NoError(t, app.Register(providerMock1))
+		assert.NoError(t, app.Register(providerMock2))
 		assert.NoError(t, app.Run())
 	})
 }
@@ -177,19 +177,19 @@ func Test_Application_Close(t *testing.T) {
 		defer ctrl.Finish()
 
 		expectedErr := errors.New("close error")
-		provider1 := NewClosableProviderMock(ctrl)
-		provider1.EXPECT().Id().Return("closable1").Times(1)
-		provider1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider1.EXPECT().Close(gomock.Any()).Return(expectedErr).Times(1)
+		providerMock1 := NewClosableProviderMock(ctrl)
+		providerMock1.EXPECT().Id().Return("closable1").Times(1)
+		providerMock1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock1.EXPECT().Close(gomock.Any()).Return(expectedErr).Times(1)
 
-		provider2 := NewClosableProviderMock(ctrl)
-		provider2.EXPECT().Id().Return("closable2").Times(1)
-		provider2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider2.EXPECT().Close(gomock.Any()).Return(nil).Times(1)
+		providerMock2 := NewClosableProviderMock(ctrl)
+		providerMock2.EXPECT().Id().Return("closable2").Times(1)
+		providerMock2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock2.EXPECT().Close(gomock.Any()).Return(nil).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider2))
-		assert.NoError(t, app.Register(provider1))
+		assert.NoError(t, app.Register(providerMock2))
+		assert.NoError(t, app.Register(providerMock1))
 		assert.ErrorIs(t, app.Close(), expectedErr)
 	})
 
@@ -197,18 +197,18 @@ func Test_Application_Close(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		provider1 := NewProviderMock(ctrl)
-		provider1.EXPECT().Id().Return("provider1").Times(1)
-		provider1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock1 := NewProviderMock(ctrl)
+		providerMock1.EXPECT().Id().Return("provider1").Times(1)
+		providerMock1.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
 
-		provider2 := NewClosableProviderMock(ctrl)
-		provider2.EXPECT().Id().Return("provider2").Times(1)
-		provider2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
-		provider2.EXPECT().Close(gomock.Any()).Return(nil).Times(1)
+		providerMock2 := NewClosableProviderMock(ctrl)
+		providerMock2.EXPECT().Id().Return("provider2").Times(1)
+		providerMock2.EXPECT().Register(gomock.Any()).Return(nil).Times(1)
+		providerMock2.EXPECT().Close(gomock.Any()).Return(nil).Times(1)
 
 		app := NewApplication()
-		assert.NoError(t, app.Register(provider1))
-		assert.NoError(t, app.Register(provider2))
+		assert.NoError(t, app.Register(providerMock1))
+		assert.NoError(t, app.Register(providerMock2))
 		assert.NoError(t, app.Close())
 	})
 }
